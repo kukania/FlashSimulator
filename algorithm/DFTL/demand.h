@@ -1,7 +1,9 @@
 #include "../../include/container.h"
 
-#define TABLE_CAPACITY (PAGESIZE/8) //Number of table entries in a page
-#define NTP (TOTALSIZE/TABLE_CAPACITY) //Number of Translation Page
+#define TABLE_CAPACITY (PAGESIZE / 8) //Number of table entries in a page
+#define NTP (TOTALSIZE / TABLE_CAPACITY) //Number of Translation Page
+#define	GTDSIZE 8 * NTP
+#define CMTSIZE CACHESIZE - GTDSIZE
 
 struct page_map{
 	int lpa;
@@ -19,3 +21,6 @@ uint32_t demand_get(const request*);
 uint32_t demand_set(const request*);
 uint32_t demand_remove(const request*);
 void *demand_end_req(algo_req*);
+int CMT_check(int lpa, int *ppa);
+uint32_t demand_eviction(int *CMT_i);
+uint32_t demand_GC();
