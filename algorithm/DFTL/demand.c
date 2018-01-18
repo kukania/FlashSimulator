@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "demand.h"
+#include "queue.h"
 
 struct algorithm __demand={
 	.create = demand_create,
@@ -10,9 +11,8 @@ struct algorithm __demand={
 	.remove = demand_remove
 };
 
-page_map *CMT;
+cached_table *CMT;
 page_map *GTD;
-int pivot = 0;
 int *block_OOB = (int*)malloc(sizeof(int) * NOB);
 memset(block_OOB, 0, sizeof(int) * NOB);
 

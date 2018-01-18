@@ -1,14 +1,15 @@
 #include "../../include/container.h"
+#include "../../algorithm/page/page.h"
 
 #define TABLE_CAPACITY (PAGESIZE / 8) //Number of table entries in a page
 #define NTP (TOTALSIZE / TABLE_CAPACITY) //Number of Translation Page
 #define	GTDSIZE 8 * NTP
 #define CMTSIZE CACHESIZE - GTDSIZE
 
-struct page_map{
+typedef struct cached_table{
 	int lpa;
 	int ppa;
-};
+}cached_table;
 
 typedef struct demand_params{
 	request *parents;
