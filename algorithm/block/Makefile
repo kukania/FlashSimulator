@@ -7,13 +7,15 @@ CFLAGS +=\
 
 
 SRCS +=\
-	   normal.c\
+	   block.c\
 
 OBJS :=\
 	$(patsubst %.c,%.o,$(SRCS))\
 
 TARGETOBJ:=\
-	$(addprefix ../../object/,$(OBJS))\
+	$(OBJS)\
+	#$(addprefix ../../object/,$(OBJS))
+	#$(OBJS)\
 
 
 all: $(TARGETOBJ) 
