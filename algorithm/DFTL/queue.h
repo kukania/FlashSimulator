@@ -4,7 +4,7 @@ typedef struct linked_list{
 	LINEKD_LIST *prev;
 }LINKED_LIST;
 
-void queue_insert(void* queue_ptr);
+void queue_insert(void* table_ptr);
 void queue_delete(LINKED_LIST* elem);
 void queue_update(LINKED_LIST* elem);
 void queue_print();

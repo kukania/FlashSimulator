@@ -12,7 +12,7 @@ struct algorithm __demand={
 
 C_TABLE *CMT;
 D_TABLE *GTD;
-D_OOB *demand_OOB;
+D_OOB *demand_OOB; // PLEASE USE OOB
 D_SRAM *d_sram;
 
 uint32_t demand_create(lower_info *li, algorithm *algo){
@@ -25,14 +25,11 @@ uint32_t demand_create(lower_info *li, algorithm *algo){
 	algo->li = li;
 
 	/* SRAM Init */
-	for(int i = 0; i < GTDSIZE / sizeof(D_TALBE); i++){
+	for(int i = 0; i < GTDENT; i++){
 		GTD[i].ppa = -1;
 	}
-	for(int i = 0; i < CMTSIZE / sizeof(C_TABLE); i++){
-		CMT[i].lpa = -1;
-		CMT[i].ppa = -1;
-		CMT[i].flag = 0;
-		CMT[i].queue_ptr = NULL;
+	for(int i = 0; i < CMTENT; i++){
+		CMT[i] = {-1, -1, 0, NULL};
 	}
 	for(int i = 0; i < _NOB; i++){
 		d_sram->lpa_RAM = -1;
@@ -51,7 +48,7 @@ uint32_t demand_get(const request *req){
 	int ppa;
 	int t_ppa;
 	int CMT_i;
-	D_TABLE* d_table;
+	D_TABLE* p_table;
 	demand_params *params = (demand_params*)malloc(sizeof(demand_params));
 	demand_params->parents = req;
 	demand_params->test = -1;
@@ -67,12 +64,12 @@ uint32_t demand_get(const request *req){
 	}
 	else{
 		demand_eviction(&CMT_i);
-		t_ppa = GTD[lpa / EPP].ppa;
-		__demand.li->pull_data(t_ppa, PAGESIZE, (V_PTR)d_table, 0, my_req, 0); 
-		ppa = d_table[lpa % EPP].ppa;
+		t_ppa = GTD[D_IDX].ppa;
+		__demand.li->pull_data(t_ppa, PAGESIZE, (V_PTR)p_table, 0, my_req, 0); 
+		ppa = p_table[P_IDX].ppa;
 		CMT[CMT_i]={lpa, ppa, 0, queue_insert((void*)(CMT + CMT_i))}; //Is it possible ???
 		__demand.li->pull_data(ppa, PAGESIZE, req->value, 0, my_req, 0);
-		free(d_table);
+		free(p_table);
 	}
 }
 
@@ -80,6 +77,7 @@ uint32_t demand_set(const request *req){
 	int lpa; //lpa of data page
 	int ppa; //ppa of data page
 	int CMT_i; //index of CMT
+	D_TABLE *p_table;
 	demand_params *params = (demand_params*)malloc(sizeof(demand_params));
 	demand_params->parents = req;
 	demand_params->test = -1;
@@ -90,23 +88,31 @@ uint32_t demand_set(const request *req){
 
 	lpa = req->key;
 	if((CMT_i = CMT_check(lpa, &ppa)) != -1){ // check CACHE
-		ppa = dp_alloc();//please add data_page_allocation function
+		demand_OOB[ppa].valid_checker = 0;
+		dp_alloc(&ppa);//please add data_page_allocation function
 		__demand.li->push_data(ppa, PAGESIZE, req->value, 0, my_req, 0);
+		demand_OOB[ppa] = {lpa, 1};
 		CMT[CMT_i] = {, ppa, 1, } // Is it possible???
 		queue_update(CMT[CMT_i].queue_ptr);
 	}
 	else{
+		__demand.li->pull_data(ppa, PAGESIZE, (V_PTR)p_table, 0, my_req, 0);
+		ppa = p_table[P_IDX];
+		demand_OOB[ppa].valid_checker = 0;
 		demand_eviction(&CMT_i); //Handling initial cycle in eviction
-		ppa = dp_alloc();
+		dp_alloc(&ppa);
 		__demand.li->push_data(ppa, PAGESIZE, req->value, 0, my_req, 0);
-		CMT[CMT_i] = {lpa, ppa, 1, queue_insert((void*)(CMT + CMT_i))
+		CMT[CMT_i] = {lpa, ppa, 1, queue_insert((void*)(CMT + CMT_i));
+		demand_OOB[ppa] = {lpa, 1};
+		free(p_table);
 	}
 }
 
 bool demand_remove(const request *req){
 	int lpa;
+	int ppa;
 	int t_ppa;
-	D_TABLE *d_table;
+	D_TABLE *p_table;
 	
 	demand_params *params = (demand_params*)malloc(sizeof(demand_params));
 	demand_params->parents = req;
@@ -120,11 +126,15 @@ bool demand_remove(const request *req){
 	if((CMT_i = CMT_check(lpa, &ppa)) != -1){
 		queue_delete(CMT[CMT_i].queue_ptr);
 		CMT[CMT_i] = {-1, -1, 0, NULL};
-		t_ppa = GTD[lpa / EPP].ppa;
-		__demand.li->pull_data(t_ppa, PAGESIZE, (V_PTR)d_table, 0, NULL, 0);
-		d_table[lpa % EPP].ppa = -1;
-		t_ppa = tp_alloc();
-		__demand.li->push_data(t_ppa, PAGESIZE, (V_PTR)d_table, 0, NULL, 0);
+	}
+	t_ppa = GTD[D_IDX].ppa;
+	__demand.li->pull_data(t_ppa, PAGESIZE, (V_PTR)p_table, 0, my_req, 0);
+	ppa = p_table[P_IDX].ppa;
+	demand_OOB[ppa].valid_checker = 0;
+	p_table[P_IDX].ppa = -1;
+	tp_alloc(&t_ppa);
+	GTD[D_IDX].ppa = t_ppa;
+	__demand.li->push_data(t_ppa, PAGESIZE, (V_PTR)p_table, 0, my_req, 0);
 }
 
 void *demand_end_req(algo_req* input){
@@ -138,13 +148,13 @@ void *demand_end_req(algo_req* input){
 }
 
 int CMT_check(int lpa, int *ppa){
-	for(int i = 0; i < CMTSIZE / sizeof(C_TABLE); i++){
+	for(int i = 0; i < CMTENT; i++){
 		if(CMT[i].lpa==lpa){
 			*ppa = CMT[i].ppa;
-			return i;
+			return i; //CMT_i
 		}
 	}
-	return -1;
+	return -1; //No such lpa in CMT
 }
 
 //Handling when cache is empty or first t_page write
@@ -152,23 +162,43 @@ uint32_t demand_eviction(int *CMT_i){
 	int lpa;
 	int ppa;
 	int t_ppa;
-	D_TABLE *d_table;
-	LRU(CMT_i);
+	D_TABLE *p_table;
+
+	/* Check empty entry */
+	for(int i = 0; i < CMTENT; i++){
+		if(CMT[i].lpa == -1){
+			*CMT_i = i;
+			return 0;
+		}
+	}
+
+	/* Eviction */
+	*CMT_i = (int)(CMT - (C_TABLE*)(tail->table_ptr)); //Use tail of queue
 	lpa = CMT[CMT_i].lpa;
 	ppa = CMT[CMT_i].ppa;
-	t_ppa = GTD[lpa / EPP]
-	__demand.li->pull_data(t_ppa, PAGESIZE, (V_PTR)d_table, 0, NULL, 0); // NULL?????
-	if(d_table[lpa % EPP] != ppa){
-		d_table[lpa % EPP] = ppa;
+	if(CMT[CMT_i].flag != 0){
+		if((t_ppa = GTD[D_IDX].ppa) != -1){	// Check it's first t_page
+			__demand.li->pull_data(t_ppa, PAGESIZE, (V_PTR)p_table, 0, NULL, 0);
+			p_table[P_IDX].ppa = ppa
+		}
 		tp_alloc(&t_ppa);
-		__demand.li->push_data(t_ppa, PAGESIZE, (V_PTR)d_table, 0, NULL, 0);
-		GTD[lpa / EPP] = t_ppa;
+		__demand.li->push_data(t_ppa, PAGESIZE, (V_PTR)p_table, 0, NULL, 0);
+		GTD[D_IDX] = t_ppa;
 	}
-	CMT[CMT_i].lpa = -1;
-	CMT[CMT_i].ppa = -1;
-	free(d_table);
+	queue_delete(tail);
+	CMT[CMT_i] = {-1, -1, 0, NULL};
+	demand_OOB[ppa].valid_checker = 0;
+	free(p_table);
 }
 
 uint32_t demand_GC(){
 	
+}
+
+uint32_t dp_alloc(int *ppa){
+	
+}
+
+uint32_t tp_alloc(int *t_ppa){
+		
 }

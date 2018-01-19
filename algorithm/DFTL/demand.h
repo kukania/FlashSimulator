@@ -5,11 +5,15 @@
 #define NTP (TOTALSIZE / EPP) //Number of Translation Page
 #define	GTDSIZE sizeof(D_TABLE) * NTP
 #define CMTSIZE TOTALSIZE - GTDSIZE
+#define D_IDX lpa/EPP	// Idx of directory table
+#define P_IDX lpa%EPP	// Idx of page table
+#define GTDENT GTDSIZE/sizeof(D_TABLE)	// Num of GTD entries
+#define CMTENT CMTSIZE/sizeof(C_TABLE)	// Num of CMT entries
 
 typedef struct cached_table{
 	int32_t lpa;
 	int32_t ppa;
-	unsigned char flag;
+	unsigned char flag; // 0: unchanged, 1: changed
 	LINKED_LIST *queue_ptr;
 }C_TABLE;
 
@@ -19,7 +23,7 @@ typedef struct demand_mapping_table{
 
 typedef struct demand_OOB{
 	int32_t reverse_table;
-	unsigned char valid_checker;
+	unsigned char valid_checker; // 0: invalid, 1: valid
 }D_OOB;
 
 typedef struct demand_SRAM{
@@ -41,3 +45,5 @@ void *demand_end_req(algo_req*);
 int CMT_check(int lpa, int *ppa);
 uint32_t demand_eviction(int *CMT_i);
 uint32_t demand_GC();
+uint32_t dp_alloc();
+uint32_t tp_alloc();

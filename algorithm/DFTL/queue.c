@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include "linked_list.h"
 
+LINKED_LIST *head;
+LINKED_LIST *tail;
+
 LINKED_LIST* queue_insert(void* table_ptr) {
 	/* Queue allocation */
 	LINKED_LIST *elem = (LINKED_LIST*)malloc(sizeof(LINKED_LIST));
