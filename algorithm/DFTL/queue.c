@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include "linked_list.h"
 
-void queue_insert(void* queue_ptr) {
+LINKED_LIST* queue_insert(void* table_ptr) {
 	/* Queue allocation */
-	LINKED_LIST *elem = malloc(sizeof(struct linked_list));
-	elem->DATA = queue_ptr;
+	LINKED_LIST *elem = (LINKED_LIST*)malloc(sizeof(LINKED_LIST));
+	elem->DATA = table_ptr;
 	elem->next = NULL;
 	elem->prev = NULL;
 
@@ -19,6 +19,7 @@ void queue_insert(void* queue_ptr) {
 		head = elem;
 		tail = elem;
 	}
+	return elem;
 }
 
 void queue_delete(LINKED_LIST* elem) {
@@ -42,10 +43,19 @@ void queue_delete(LINKED_LIST* elem) {
 }
 
 void queue_update(LINKED_LIST* elem){
+	LINKED_LIST *prev = elem->prev;
+	LINKED_LIST *next = elem->next;
 	if (elem != NULL) { 
 		if(elem != head) {
-			queue_insert((void*)(elem->DATA));
-			queue_delete(elem);
+			if(next != NULL)
+				next->prev = prev;
+			else
+				tail = prev;
+			prev->next = next;
+			elem->prev = NULL;
+			elem->next = head;
+			head->prev = elem;
+			head = elem;
 		}
 	}
 	else
