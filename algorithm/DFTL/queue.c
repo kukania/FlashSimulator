@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "linked_list.h"
+#include "queue.h"
 
 LINKED_LIST *head;
 LINKED_LIST *tail;
@@ -71,7 +71,7 @@ void queue_print() {
 
 		/* Print from head to tail */
 		while (elem != NULL) {
-			printf("%d\n", elem->DATA);
+			printf("%p\n", elem->DATA);
 			elem = elem->next;
 		}
 	}
@@ -85,7 +85,7 @@ void queue_print_back() {
 
 		/* Print from tail to head */
 		while (elem != NULL) {
-			printf("%d\n", elem->DATA);
+			printf("%p\n", elem->DATA);
 			elem = elem->prev;
 		}
 	}
