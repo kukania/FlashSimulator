@@ -16,8 +16,12 @@ D_TABLE *GTD;
 D_OOB *demand_OOB; // PLEASE USE OOB
 D_SRAM *d_sram;
 
+/*
 uint32_t DPA_status = 0;
 uint32_t TPA_status = _NOP;
+*/
+
+uint32_t PPA_status = 0;
 
 extern LINKED_LIST *head;
 extern LINKED_LIST *tail;
@@ -204,9 +208,17 @@ uint32_t demand_GC(){
 }
 
 uint32_t dp_alloc(int *ppa){
-	return 0;
+	*ppa = PPA_status;
+	PPA_status++;
+	if(PPA_status == _NOP){
+		PPA_status = 0;
+	}
 }
 
 uint32_t tp_alloc(int *t_ppa){
-	return 0;	
+	*t_ppa = PPA_status;
+	PPA_status++;
+	if(PPA_status == _NOP){
+		PPA_status = 0;
+	}
 }
