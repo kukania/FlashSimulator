@@ -36,7 +36,7 @@ uint32_t block_create (lower_info* li,algorithm *algo){
 
 	block_valid_array = (int8_t*)malloc(sizeof(int8_t)*li->NOB);
 	for (i = 0; i < li->NOB; ++i)
-		block_valid_array = ERASE; // 0 means ERASED, 1 means VALID
+		block_valid_array[i] = ERASE; // 0 means ERASED, 1 means VALID
 	// memset(block_valid_array, 0, li->NOB * li->SOB); 
 
 }
@@ -145,6 +145,50 @@ uint32_t block_set(const request *req){
 			// Data move to new block
 			uint8_t* temp_block = (uint8_t*)malloc(sizeof(uint8_t)*__block.li->PPB); // 이거 vale를 제대로 담을 수 있는 걸로 만들어야..
 			int i;
+
+			/* Followings: ASC consideartion */
+
+			for (i = 0; i < offset; ++i) {
+				algo_req *temp_req=(algo_req*)malloc(sizeof(algo_req));
+				temp_req->end_req=block_end_req;
+				temp_req->params=(void*)params;
+				__block.li->pull_data(PBA* __block.li->PPB + i, PAGESIZE, temp_block+i, 0, temp_req, 0);
+
+				exist_table[PBA * __block.li->PPB + i] = NONEXIST;
+				exist_table[new_PBA * __block.li->PPB + i] = EXIST;
+
+				algo_req *my_req = (algo_req*)malloc(sizeof(algo_req));
+				my_req->end_req = block_end_req;
+				my_req->params = (void*)params;
+				__block.li->push_data(new_PBA * __block.li->PPB + i, PAGESIZE, temp_block+i, 0, my_req, 0);
+			}
+
+			algo_req *my_req = (algo_req*)malloc(sizeof(algo_req));
+			my_req->end_req = block_end_req;
+			my_req->params = (void*)params;
+			__block.li->push_data(new_PPA, PAGESIZE, req->value, 0, my_req, 0);
+			
+			if (offset < __block.li->PPB) {
+				for (i = offset + 1; i < __block.li->PPB; ++i) {
+					algo_req *temp_req = (algo_req*)malloc(sizeof(algo_req));
+					temp_req->end_req = block_end_req;
+					temp_req->params = (void*)params;
+					__block.li->pull_data(PBA* __block.li->PPB + i, PAGESIZE, temp_block+i, 0, temp_req, 0);
+
+					exist_table[PBA * __block.li->PPB + i] = NONEXIST;
+					exist_table[new_PBA * __block.li->PPB + i] = EXIST;
+
+					algo_req *my_req = (algo_req*)malloc(sizeof(algo_req));
+					my_req->end_req = block_end_req;
+					my_req->params = (void*)params;
+					__block.li->push_data(new_PBA * __block.li->PPB + i, PAGESIZE, temp_block+i, 0, my_req, 0);
+				}
+			}
+
+					
+
+			/* Followings: No ASC consideration */
+			/*
 			for (i = 0; i<__block.li->PPB; ++i)
 			{
 				if (i == offset) {
@@ -171,6 +215,7 @@ uint32_t block_set(const request *req){
 					__block.li->push_data(new_PBA *__block.li->PPB + i, PAGESIZE, temp_block+i, 0, my_req, 0);
 				}
 			}
+			*/
 			//trim(PBA);
 			__block.li->trim_block(PBA * __block.li->PPB + offset, false); // Is that right?
 			free(temp_block);

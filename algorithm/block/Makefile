@@ -13,8 +13,7 @@ OBJS :=\
 	$(patsubst %.c,%.o,$(SRCS))\
 
 TARGETOBJ:=\
-	$(OBJS)\
-	#$(addprefix ../../object/,$(OBJS))
+	$(addprefix ../../object/,$(OBJS))
 	#$(OBJS)\
 
 
