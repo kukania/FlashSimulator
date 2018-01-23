@@ -200,36 +200,56 @@ uint32_t demand_eviction(int *CMT_i){
 	demand_OOB[ppa].valid_checker = 0;
 	free(p_table);
 }
-/*
+
 char btype_check(uint32_t PBA_status){
 	for(int i = 0; i < GTDENT; i++){
 		if((GTD[i].ppa / _PPB) == PBA_status)
 			return 'T';
 	}
-	return 'D'
+	return 'D';
 }
 
 //please change all int of page address to uint32_t
-void SRAM_load(uint32_t ppa, int a){
-	__demand.li->pull_data(ppa, PAGESIZE, d_sram[a].PTR_RAM, 0, NULL, 0);
-	d_sram[a].lpa_RAM = demand_OOB[ppa].reverse_table;
+//please make NULL ptr to other ptr
+void SRAM_load(uint32_t ppa, int idx){
+	__demand.li->pull_data(ppa, PAGESIZE, d_sram[idx].PTR_RAM, 0, NULL, 0);
+	d_sram[idx].lpa_RAM = demand_OOB[ppa].reverse_table;
 	demand_OOB[ppa] = (D_OOB){-1, 0};
 }
 
-void SRAM_unload(uint32_t ppa, int a){
-	__demand.li->push_data(ppa, PAGESIZE, d_sram[a].PTR_RAM, 0, NULL, 0);
-	demand_OOB[ppa] = (D_OOB){d_sram[a].lpa_RAM, 1};
-	d_sram[a] = (D_SRAM){
+void SRAM_unload(uint32_t ppa, int idx){
+	__demand.li->push_data(ppa, PAGESIZE, d_sram[idx].PTR_RAM, 0, NULL, 0);
+	demand_OOB[ppa] = (D_OOB){d_sram[idx].lpa_RAM, 1};
+	d_sram[idx] = (D_SRAM){-1, NULL};
+}
 
-uint32_t demand_GC(uint32_t PBA_status){
+void demand_GC(uint32_t PBA_status){
+	/* SRAM load */
 	int temp_idx = 0;
+	for(int i = PBA_status * _PPB; i < (PBA_status + 1) * _PPB; i++){
+		if(demand_OOB[i].valid_checker == 1){
+			SRAM_load(i, temp_idx);
+			temp_idx++;
+		}
+	}
+	__demand.li->trim_block(PBA_status * _PPB, false); //BLOCK erase
+
+	/* SRAM unload */
 	if(btype_check(PBA_status) == 'T'){
-		for(int i = PBA_status * _PPB; i < (PBA_status + 1) * _PPB; i++){
-			if(demand_OOB[i].valid_checker == 1){
-				
-	
-	return 0;
-}*/
+		for(int j = 0; j < temp_idx; j++){
+			GTD[(d_sram[j].lpa_RAM / _PPB)].ppa = PBA_status * _PPB + j;
+			SRAM_unload(PBA_status * _PPB + j, j);
+		}
+		TPA_status = PBA_status * _PPB + temp_idx;
+	}
+	else{
+		for(int j = 0; j < temp_idx; j++){
+			// translation page management
+			SRAM_unload(PBA_status * _PPB + j, j);
+		}
+		DPA_status = PBA_status * _PPB + temp_idx;
+	}
+}
 
 void dp_alloc(int *ppa){
 	if(DPA_status % _PPB == 0){

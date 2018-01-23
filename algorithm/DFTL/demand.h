@@ -45,6 +45,6 @@ void *demand_end_req(algo_req*);
 int CMT_check(int lpa, int *ppa);
 uint32_t demand_eviction(int *CMT_i);
 char btype_check(uint32_t PBA_status);
-uint32_t demand_GC(uint32_t PBA_status);
+void demand_GC(uint32_t PBA_status);
 void dp_alloc(int *ppa);
 void tp_alloc(int *t_ppa);
