@@ -16,12 +16,10 @@ D_TABLE *GTD;
 D_OOB *demand_OOB; // PLEASE USE OOB
 D_SRAM *d_sram;
 
-/*
-uint32_t DPA_status = 0;
-uint32_t TPA_status = _NOP;
-*/
 
-uint32_t PPA_status = 0;
+uint32_t DPA_status = 0;
+uint32_t TPA_status = 0;
+uint32_t PBA_status = 0;
 
 extern LINKED_LIST *head;
 extern LINKED_LIST *tail;
@@ -44,8 +42,8 @@ uint32_t demand_create(lower_info *li, algorithm *algo){
 	}
 	for(int i = 0; i < _NOB; i++){
 		d_sram->lpa_RAM = -1;
-		d_sram->VPTR_RAM = NULL;
-	memset(demand_OOB, 0, sizeof(D_OOB) * _NOB);
+		d_sram->PTR_RAM = NULL;
+		memset(demand_OOB, 0, sizeof(D_OOB) * _NOB);
 	}
 }
 
@@ -202,23 +200,65 @@ uint32_t demand_eviction(int *CMT_i){
 	demand_OOB[ppa].valid_checker = 0;
 	free(p_table);
 }
+/*
+char btype_check(uint32_t PBA_status){
+	for(int i = 0; i < GTDENT; i++){
+		if((GTD[i].ppa / _PPB) == PBA_status)
+			return 'T';
+	}
+	return 'D'
+}
 
-uint32_t demand_GC(){
+//please change all int of page address to uint32_t
+void SRAM_load(uint32_t ppa, int a){
+	__demand.li->pull_data(ppa, PAGESIZE, d_sram[a].PTR_RAM, 0, NULL, 0);
+	d_sram[a].lpa_RAM = demand_OOB[ppa].reverse_table;
+	demand_OOB[ppa] = (D_OOB){-1, 0};
+}
+
+void SRAM_unload(uint32_t ppa, int a){
+	__demand.li->push_data(ppa, PAGESIZE, d_sram[a].PTR_RAM, 0, NULL, 0);
+	demand_OOB[ppa] = (D_OOB){d_sram[a].lpa_RAM, 1};
+	d_sram[a] = (D_SRAM){
+
+uint32_t demand_GC(uint32_t PBA_status){
+	int temp_idx = 0;
+	if(btype_check(PBA_status) == 'T'){
+		for(int i = PBA_status * _PPB; i < (PBA_status + 1) * _PPB; i++){
+			if(demand_OOB[i].valid_checker == 1){
+				
+	
 	return 0;
+}*/
+
+void dp_alloc(int *ppa){
+	if(DPA_status % _PPB == 0){
+		if(PBA_status >= _NOB){
+			PBA_status = PBA_status % _NOB;
+			demand_GC(PBA_status);
+			DPA_status = PBA_status * _PPB;
+			PBA_status = PBA_status + _NOB;
+		}
+		else
+			DPA_status = PBA_status * _PPB;
+		PBA_status++;
+	}
+	*ppa = DPA_status;
+	DPA_status++;
 }
 
-uint32_t dp_alloc(int *ppa){
-	*ppa = PPA_status;
-	PPA_status++;
-	if(PPA_status == _NOP){
-		PPA_status = 0;
+void tp_alloc(int *t_ppa){
+	if(TPA_status % _PPB == 0){
+		if(PBA_status >= _NOB){
+			PBA_status = PBA_status % _NOB;
+			demand_GC(PBA_status);
+			TPA_status = PBA_status * _PPB;
+			PBA_status = PBA_status + _NOB;
+		}
+		else
+			TPA_status = PBA_status * _PPB;
+		PBA_status++;
 	}
-}
-
-uint32_t tp_alloc(int *t_ppa){
-	*t_ppa = PPA_status;
-	PPA_status++;
-	if(PPA_status == _NOP){
-		PPA_status = 0;
-	}
+	*t_ppa = TPA_status;
+	TPA_status++;
 }

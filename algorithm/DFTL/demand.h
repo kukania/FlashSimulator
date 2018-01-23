@@ -28,7 +28,7 @@ typedef struct demand_OOB{
 
 typedef struct demand_SRAM{
 	int32_t lpa_RAM;
-	PTR VPTR_RAM;
+	PTR PTR_RAM;
 }D_SRAM;
 
 typedef struct demand_params{
@@ -44,6 +44,7 @@ uint32_t demand_remove(const request*);
 void *demand_end_req(algo_req*);
 int CMT_check(int lpa, int *ppa);
 uint32_t demand_eviction(int *CMT_i);
-uint32_t demand_GC();
-uint32_t dp_alloc(int *ppa);
-uint32_t tp_alloc(int *t_ppa);
+char btype_check(uint32_t PBA_status);
+uint32_t demand_GC(uint32_t PBA_status);
+void dp_alloc(int *ppa);
+void tp_alloc(int *t_ppa);
