@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 #include "demand.h"
 
 struct algorithm __demand={
@@ -16,35 +17,35 @@ D_TABLE *GTD;
 D_OOB *demand_OOB; // PLEASE USE OOB
 D_SRAM *d_sram;
 
-
 uint32_t DPA_status = 0;
 uint32_t TPA_status = 0;
 uint32_t PBA_status = 0;
 
-extern LINKED_LIST *head;
-extern LINKED_LIST *tail;
-
 uint32_t demand_create(lower_info *li, algorithm *algo){
-
-	/* Table Alloc */
+	// Table Alloc 
 	GTD = (D_TABLE*)malloc(GTDSIZE);
 	CMT = (C_TABLE*)malloc(CMTSIZE);
 	demand_OOB = (D_OOB*)malloc(sizeof(D_OOB) * _NOB);
 	d_sram = (D_SRAM*)malloc(sizeof(D_SRAM) * _NOB);
 	algo->li = li;
+	printf("Table_alloc done\n");
 
-	/* SRAM Init */
+	// SRAM Init 
 	for(int i = 0; i < GTDENT; i++){
 		GTD[i].ppa = -1;
 	}
+	printf("GTD done\n");
 	for(int i = 0; i < CMTENT; i++){
 		CMT[i] = (C_TABLE){-1, -1, 0, NULL};
 	}
+	printf("CMT done\n");
 	for(int i = 0; i < _NOB; i++){
 		d_sram->lpa_RAM = -1;
 		d_sram->PTR_RAM = NULL;
-		memset(demand_OOB, 0, sizeof(D_OOB) * _NOB);
 	}
+	printf("SRAM init done\n");
+	memset(demand_OOB, 0, sizeof(D_OOB) * _NOB);
+	printf("OOB init done\n");
 }
 
 void demand_destroy(lower_info *li, algorithm *algo){
@@ -54,9 +55,9 @@ void demand_destroy(lower_info *li, algorithm *algo){
 }
 
 uint32_t demand_get(const request *req){
-	int lpa;
-	int ppa;
-	int t_ppa;
+	uint32_t lpa;
+	uint32_t ppa;
+	uint32_t t_ppa;
 	int CMT_i;
 	D_TABLE* p_table;
 	demand_params *params = (demand_params*)malloc(sizeof(demand_params));
@@ -84,8 +85,8 @@ uint32_t demand_get(const request *req){
 }
 
 uint32_t demand_set(const request *req){
-	int lpa; //lpa of data page
-	int ppa; //ppa of data page
+	uint32_t lpa; //lpa of data page
+	uint32_t ppa; //ppa of data page
 	int CMT_i; //index of CMT
 	D_TABLE *p_table;
 	demand_params *params = (demand_params*)malloc(sizeof(demand_params));
@@ -98,6 +99,7 @@ uint32_t demand_set(const request *req){
 
 	lpa = req->key;
 	if((CMT_i = CMT_check(lpa, &ppa)) != -1){ // check CACHE
+		// CACHE hit
 		demand_OOB[ppa].valid_checker = 0;
 		dp_alloc(&ppa);//please add data_page_allocation function
 		__demand.li->push_data(ppa, PAGESIZE, req->value, 0, my_req, 0);
@@ -105,22 +107,19 @@ uint32_t demand_set(const request *req){
 		queue_update(CMT[CMT_i].queue_ptr);
 	}
 	else{
-		__demand.li->pull_data(ppa, PAGESIZE, (V_PTR)p_table, 0, my_req, 0);
-		ppa = p_table[P_IDX].ppa;
-		demand_OOB[ppa].valid_checker = 0;
+		// CACHE miss
 		demand_eviction(&CMT_i); //Handling initial cycle in eviction
 		dp_alloc(&ppa);
 		__demand.li->push_data(ppa, PAGESIZE, req->value, 0, my_req, 0);
 		CMT[CMT_i] = (C_TABLE){lpa, ppa, 1, queue_insert((void*)(CMT + CMT_i))};
 		demand_OOB[ppa] = (D_OOB){lpa, 1};
-		free(p_table);
 	}
 }
 
 bool demand_remove(const request *req){
-	int lpa;
-	int ppa;
-	int t_ppa;
+	uint32_t lpa;
+	uint32_t ppa;
+	uint32_t t_ppa;
 	int CMT_i;
 	D_TABLE *p_table;
 	
@@ -157,7 +156,7 @@ void *demand_end_req(algo_req* input){
 	free(input);
 }
 
-int CMT_check(int lpa, int *ppa){
+int CMT_check(uint32_t lpa, uint32_t *ppa){
 	for(int i = 0; i < CMTENT; i++){
 		if(CMT[i].lpa==lpa){
 			*ppa = CMT[i].ppa;
@@ -169,9 +168,9 @@ int CMT_check(int lpa, int *ppa){
 
 //Handling when cache is empty or first t_page write
 uint32_t demand_eviction(int *CMT_i){
-	int lpa;
-	int ppa;
-	int t_ppa;
+	uint32_t lpa;
+	uint32_t ppa;
+	uint32_t t_ppa;
 	D_TABLE *p_table;
 
 	/* Check empty entry */
@@ -209,8 +208,14 @@ char btype_check(uint32_t PBA_status){
 	return 'D';
 }
 
+void batch_update(){
+	//qsort(d_sram);
+}
+
 //please change all int of page address to uint32_t
 //please make NULL ptr to other ptr
+//
+
 void SRAM_load(uint32_t ppa, int idx){
 	__demand.li->pull_data(ppa, PAGESIZE, d_sram[idx].PTR_RAM, 0, NULL, 0);
 	d_sram[idx].lpa_RAM = demand_OOB[ppa].reverse_table;
@@ -245,17 +250,18 @@ void demand_GC(uint32_t PBA_status){
 	else{
 		for(int j = 0; j < temp_idx; j++){
 			// translation page management
+			batch_update();
 			SRAM_unload(PBA_status * _PPB + j, j);
 		}
 		DPA_status = PBA_status * _PPB + temp_idx;
 	}
 }
 
-void dp_alloc(int *ppa){
+void dp_alloc(uint32_t *ppa){
 	if(DPA_status % _PPB == 0){
 		if(PBA_status >= _NOB){
 			PBA_status = PBA_status % _NOB;
-			demand_GC(PBA_status);
+			//demand_GC(PBA_status);
 			DPA_status = PBA_status * _PPB;
 			PBA_status = PBA_status + _NOB;
 		}
@@ -267,11 +273,11 @@ void dp_alloc(int *ppa){
 	DPA_status++;
 }
 
-void tp_alloc(int *t_ppa){
+void tp_alloc(uint32_t *t_ppa){
 	if(TPA_status % _PPB == 0){
 		if(PBA_status >= _NOB){
 			PBA_status = PBA_status % _NOB;
-			demand_GC(PBA_status);
+			//demand_GC(PBA_status);
 			TPA_status = PBA_status * _PPB;
 			PBA_status = PBA_status + _NOB;
 		}

@@ -8,7 +8,7 @@ CFLAGS +=\
 
 SRCS +=\
 	   demand.c\
-	   queue.c\
+	   demand_queue.c\
 
 OBJS :=\
 	$(patsubst %.c,%.o,$(SRCS))\

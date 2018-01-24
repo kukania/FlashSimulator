@@ -9,3 +9,6 @@ void queue_delete(LINKED_LIST* elem);
 void queue_update(LINKED_LIST* elem);
 void queue_print();
 void queue_print_back();
+
+LINKED_LIST *head;
+LINKED_LIST *tail;

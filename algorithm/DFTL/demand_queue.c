@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "queue.h"
-
-LINKED_LIST *head;
-LINKED_LIST *tail;
+#include "demand_queue.h"
 
 LINKED_LIST* queue_insert(void* table_ptr) {
 	/* Queue allocation */
