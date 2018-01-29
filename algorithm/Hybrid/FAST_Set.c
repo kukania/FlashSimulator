@@ -21,11 +21,15 @@ bool FAST_Set(const request* req)
     value = req->value;    
 
     // Find page to write
-    if(fast_AllocDataBlockEntry(key, &physical_address) == 0){
-        if(fast_AllocSWLogBlockEntry(key, &physical_address) == 0){
-            fast_AllocRWLogBlockEntry(key, &physical_address);
+	//printf("physical_address: %d\n", physical_address);
+    if(fast_AllocDataBlockEntry(key, &physical_address) != 0){
+		//printf("physical_address: %d\n", physical_address);
+        if(fast_AllocSWLogBlockEntry(key, &physical_address) != 0){
+    		//printf("physical_address: %d\n", physical_address);
+        	fast_AllocRWLogBlockEntry(key, &physical_address);
         }
     }
+	//printf("Translated_address: %d\n", physical_address);
 
     // Push data using translated address
     params = (FAST_Parameters*)malloc(sizeof(FAST_Parameters));

@@ -9,7 +9,7 @@
  *  No returns
  */
 
-void fast_MergeRWLogBlock()
+int fast_MergeRWLogBlock(int log_block)
 {
     RW_MappingTable* rw_MappingTable = tableInfo->rw_MappingTable;
 

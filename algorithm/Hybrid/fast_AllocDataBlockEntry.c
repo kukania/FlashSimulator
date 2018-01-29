@@ -23,11 +23,15 @@ int fast_AllocDataBlockEntry(KEYT key, uint32_t* physical_address)
     /* Should Use Block Mapping Table */
     logical_block = BLOCK(key);
     offset = OFFSET(key);
-
-    physical_block = BLOCK_TABLE(logical_block);
-    *physical_address = ADDRESS(physical_block, offset);
+	physical_block = BLOCK_TABLE(logical_block);
+	*physical_address = ADDRESS(physical_block, offset);
     check = GET_STATE(*physical_address);
-
+	if(check == VALID){
+		SET_STATE(*physical_address, INVALID);
+	}
+	else if(check == ERASED){
+		SET_STATE(*physical_address, VALID);
+	}
     return check;
     /*
     if(check == ERASED){

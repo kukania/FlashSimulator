@@ -17,6 +17,17 @@ int main(){
 		free(temp);
 	}
 
+/*
+	for(int i=0; i<300; i++){
+#ifdef LEAKCHECK
+		printf("set: %d\n",i);
+#endif
+		char *temp=(char*)malloc(PAGESIZE);
+		memcpy(temp,&i,sizeof(i));
+		inf_make_req(FS_SET_T,i,temp);
+		free(temp);
+	}
+*/
 	int check;
 	for(int i=0; i<300; i++){
 		char *temp=(char*)malloc(PAGESIZE);

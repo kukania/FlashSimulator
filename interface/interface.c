@@ -6,6 +6,7 @@
 #include <unistd.h>
 extern struct lower_info __posix;
 extern struct algorithm __normal;
+extern struct algorithm FAST_Algorithm;
 master_processor mp;
 void *p_main(void*);
 static void assign_req(request* req){
@@ -55,8 +56,10 @@ void inf_init(){
 #endif
 
 #ifdef normal
-	mp.algo=&__normal;
+	//mp.algo=&__normal;
 #endif
+	mp.algo = &FAST_Algorithm;
+
 	mp.li->create(mp.li);
 	mp.algo->create(mp.li,mp.algo);
 }

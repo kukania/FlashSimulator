@@ -19,6 +19,9 @@ SRCS +=\
 		fast_SearchRWLogBlock.c\
 		fast_SearchSWLogBlock.c\
 		fast_Util.c\
+		fast_SwitchSWLogBlock.c\
+		fast_MergeSWLogBlock.c\
+		fast_MergeRWLogBlock.c\
 
 OBJS :=\
 	$(patsubst %.c,%.o,$(SRCS))\

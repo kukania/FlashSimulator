@@ -15,9 +15,12 @@ extern const char eNOERROR;
 extern const char eNOTWRITTEN;
 extern const char eOVERWRITTED;
 extern const char eUNEXPECTED;
+extern const char eNOTSEQUENTIAL;
 
 extern const char eNOTFOUND;
 extern const char UNEXPECTED;
+
+extern const char NIL;
 
 extern char* STATE;
 /*@

@@ -52,8 +52,10 @@ const char UNEXPECTED = -2;
 const char eNOTWRITTEN = -3;
 const char eOVERWRITTED = -4;
 const char eUNEXPECTED = -5;
+const char eNOTSEQUENTIAL = -6;
 const char NUMBER_OF_RW_LOG_BLOCK = 15;
 
+const char NIL = -1;
 
 uint32_t FAST_Create(lower_info* li, algorithm* algo)
 {
@@ -93,8 +95,16 @@ uint32_t FAST_Create(lower_info* li, algorithm* algo)
             (Block_MappingInfo*)malloc(sizeof(Block_MappingInfo) * NUMBER_OF_BLOCK);
     memset(tableInfo->block_MappingTable->data, 0, sizeof(Block_MappingInfo) * PAGE_PER_BLOCK);
 
-    char* STATE = (char*)malloc(sizeof(char)*NUMBER_OF_BLOCK*NUMBER_OF_PAGE);
-    memset(STATE, ERASED, NUMBER_OF_BLOCK*NUMBER_OF_PAGE);
-    
-    printf("OK\n");
+	for(int i = 0; i < NUMBER_OF_BLOCK; i++){
+		tableInfo->block_MappingTable->data[i].physical_block = i;
+	}
+
+	tableInfo->sw_MappingTable->data->physical_block = 1000; // @TODO : should change dependent on log block size
+
+    STATE = (char*)malloc(sizeof(char)*NUMBER_OF_BLOCK);
+    memset(STATE, ERASED, NUMBER_OF_BLOCK);
+    printf("FAST FTL Creation Finished!\n");
+	printf("Page Per Block : %d\n", PAGE_PER_BLOCK);
+	printf("Total_Size : %d\n", TOTAL_SIZE);
+	printf("NUMBER_OF_PAGE : %d\n", NUMBER_OF_PAGE);
 }

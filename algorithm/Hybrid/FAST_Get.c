@@ -27,12 +27,16 @@ bool FAST_Get(const request *req)
     key = req->key;
     value = req->value;
 
-
-    if(fast_SearchSWLogBlock(key, &physical_address) == 0){
-        if(fast_SearchRWLogBlock(key, &physical_address) == 0){
+	//printf("Physical_Address: %d\n", physical_address);
+    if(fast_SearchSWLogBlock(key, &physical_address) == eNOTFOUND){
+        //printf("Physical_Address: %d\n", physical_address);
+		if(fast_SearchRWLogBlock(key, &physical_address) == eNOTFOUND){
+			//printf("Physical_Address: %d\n", physical_address);
             fast_SearchDataBlock(key, &physical_address);
         }
     }
+	//printf("Test\n");
+	//printf("Key: %d Translated Address: %d\n", key, physical_address);
 
 /*    
     if(!FAST_SearchLogBlockTable(req, &physical_address)){

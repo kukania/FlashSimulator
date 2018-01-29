@@ -19,7 +19,9 @@ int fast_SearchRWLogBlock(uint32_t logical_address, uint32_t* physical_address)
     
     for(entry = rw_MappingTable->data + (number_of_total_entry - 1); entry >= rw_MappingTable->data; entry--){        
         if(logical_address == ADDRESS(entry->logical_block, entry->logical_offset)){
-            *physical_address = ADDRESS(entry->physical_block, entry->physical_offset);
+			//printf("Check: %d %d", entry->logical_block, entry->logical_offset);
+			//printf("Check: %d %d", entry->physical_block, entry->physical_offset);
+            *physical_address = ADDRESS(entry->logical_block, entry->logical_offset);
             return (eNOERROR);
         }
     }
