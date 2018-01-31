@@ -16,7 +16,7 @@
  */
 
 // @TODO : Please use Circular Queue
-int fast_AllocRWLogBlockEntry(KEYT key, uint32_t* physical_address)
+char fast_AllocRWLogBlockEntry(KEYT key, uint32_t* physical_address)
 {
     uint32_t physical_block;
     uint32_t offset;
@@ -44,4 +44,6 @@ int fast_AllocRWLogBlockEntry(KEYT key, uint32_t* physical_address)
     if(number_of_full_log_block == NUMBER_OF_RW_LOG_BLOCK){
         // @TODO: TRIM
     }
+
+    printf("Check\n");
 }

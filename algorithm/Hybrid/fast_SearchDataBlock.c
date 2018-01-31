@@ -19,7 +19,7 @@
  * 
  */
 
-int fast_SearchDataBlock(uint32_t logical_address, uint32_t* physical_address)
+char fast_SearchDataBlock(uint32_t logical_address, uint32_t* physical_address)
 {
     //SW_MappingTable*    sw_MappingTable;
     //RW_MappingTable*    rw_MappingTable;

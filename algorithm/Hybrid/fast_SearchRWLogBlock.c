@@ -11,7 +11,7 @@
  *  No returns
  */
 
-int fast_SearchRWLogBlock(uint32_t logical_address, uint32_t* physical_address)
+char fast_SearchRWLogBlock(uint32_t logical_address, uint32_t* physical_address)
 {
     RW_MappingTable* rw_MappingTable = tableInfo->rw_MappingTable;
     RW_MappingInfo* entry;

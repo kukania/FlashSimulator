@@ -11,7 +11,7 @@
  * 
  */
 
-int fast_AllocDataBlockEntry(KEYT key, uint32_t* physical_address)
+char fast_AllocDataBlockEntry(KEYT key, uint32_t* physical_address)
 {
     // RW_MappingTable* rw_MappingTable = tableInfo->rw_MappingTable;
 

@@ -22,10 +22,11 @@ bool FAST_Set(const request* req)
 
     // Find page to write
 	//printf("physical_address: %d\n", physical_address);
-    if(fast_AllocDataBlockEntry(key, &physical_address) != 0){
+    if(fast_AllocDataBlockEntry(key, &physical_address) != eNOERROR){
 		//printf("physical_address: %d\n", physical_address);
-        if(fast_AllocSWLogBlockEntry(key, &physical_address) != 0){
+        if(fast_AllocSWLogBlockEntry(key, &physical_address) != eNOERROR){
     		//printf("physical_address: %d\n", physical_address);
+            printf("Why so slow?\n");
         	fast_AllocRWLogBlockEntry(key, &physical_address);
         }
     }

@@ -145,20 +145,20 @@ int fast_ReadFromSWLogBlock(uint32_t physical_address);
 int fast_ReadFromRWLogBlock(uint32_t physical_address);
 
 /* Fast_Set */
-int fast_Write();
-int fast_WriteToLogBlock();
-int fast_AllocDataBlockEntry(KEYT key, uint32_t* physical_address);
-int fast_AllocSWLogBlockEntry(KEYT key, uint32_t* physical_address);
-int fast_AllocRWLogBlockEntry(KEYT key, uint32_t* physical_address);
+char fast_Write();
+char fast_WriteToLogBlock();
+char fast_AllocDataBlockEntry(KEYT key, uint32_t* physical_address);
+char fast_AllocSWLogBlockEntry(KEYT key, uint32_t* physical_address);
+char fast_AllocRWLogBlockEntry(KEYT key, uint32_t* physical_address);
 
 /* FAST_Remove */
-int fast_SwitchSWLogBLock(int log_block_number);
-int fast_MergeSWLogBlock(int log_block_number);
-int fast_MergeRWLogBLock(int log_block_number);
+char fast_SwitchSWLogBLock(uint32_t log_block_number);
+char fast_MergeSWLogBlock(uint32_t log_block_number);
+char fast_MergeRWLogBLock(uint32_t log_block_number);
 
-int fast_SearchSWLogBlock(uint32_t logical_address, uint32_t* physical_address);
-int fast_SearchRWLogBlock(uint32_t logical_address, uint32_t* physical_address);
-int fast_SearchDataBlock(uint32_t logical_address, uint32_t* physical_address);
+char fast_SearchSWLogBlock(uint32_t logical_address, uint32_t* physical_address);
+char fast_SearchRWLogBlock(uint32_t logical_address, uint32_t* physical_address);
+char fast_SearchDataBlock(uint32_t logical_address, uint32_t* physical_address);
 
 
 /*
